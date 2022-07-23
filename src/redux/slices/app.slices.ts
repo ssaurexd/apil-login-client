@@ -11,7 +11,7 @@ const appSlice = createSlice({
 	name: 'app',
 	initialState,
 	reducers: {
-		changeTheme: ( state, actions?: PayloadAction<Theme>  ) => {
+		changeTheme: ( state, actions: PayloadAction<Theme|undefined>  ) => {
 			
 			if( actions?.payload ) {
 
