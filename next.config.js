@@ -2,6 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  env: {
+    JWT_SEED: 'hdf842id9923'
+  }
 }
 
 module.exports = nextConfig
