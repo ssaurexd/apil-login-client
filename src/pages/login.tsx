@@ -1,13 +1,24 @@
 import { useState } from 'react'
 import { useRouter } from 'next/router'
+import NextLink from 'next/link'
 import { NextPage, GetServerSideProps } from 'next'
 import { getSession, signIn } from 'next-auth/react'
 import * as yup from 'yup'
 import { Formik } from 'formik'
-import { Alert, Paper, TextField } from '@mui/material'
+import { LockOutlined as LockOutlinedIcon } from '@mui/icons-material'
+import { 
+	Alert,
+	Paper, 
+	TextField,
+	Grid,
+	Link,
+	Avatar,
+	Typography,
+	Container
+} from '@mui/material'
 /*  */
 import { ThemeLayout } from '../layouts'
-import { Btn } from '../components'
+import { Btn, ToggleTheme } from '../components'
 
 
 interface IFormData {
@@ -27,6 +38,7 @@ const LoginPage: NextPage = ( ) => {
 	/* functions */
 	const onLogin = async ( values: { email: string; password: string } ) => {
 		
+		setErrorMsg( '' )
 		setIsLoading( true )
 		const resp: any = await signIn( 'credentials', { ...values, redirect: false } )
 		const path = ( router.query.p || '/' ) as string 
@@ -42,55 +54,101 @@ const LoginPage: NextPage = ( ) => {
 
 	return (
 		<ThemeLayout>
-			<Paper
-				sx={{ padding: '10px' }}
-				elevation={ 0 }
+			<Container
+				sx={{
+					width: '100%',
+					minHeight: '100vh',
+					display: 'flex',
+					justifyContent: 'center',
+					alignItems: 'center',
+					position: 'relative'
+				}}
 			>
-				<Formik
-					initialValues={ initialState }
-					onSubmit={ async ( values ) => {
-						await onLogin( values )
+				<ToggleTheme sx={{ position: 'absolute', top: '10px', right: '10px' }} />
+				<Paper
+					sx={{ 
+						padding: '2.5%', 
+						maxWidth: '500px',
+						display: 'flex',
+						flexDirection: 'column',
+						justifyContent: 'center',
+						alignItems: 'center'
 					}}
-					validationSchema={ yup.object().shape({
-						email: yup.string().email( 'Email no valido' ).required( 'Campo obligatorio' ),
-						password: yup.string().required( 'Campo obligatorio' ),
-					})}
+					elevation={ 0 }
 				>
-					{({ values, errors, handleChange, handleSubmit}) => (
-						<form onSubmit={ handleSubmit }>
-							{ errorMsg && <Alert severity="error">{ errorMsg }</Alert> }
-							<TextField 
-								label='Email'
-								name='email'
-								onChange={ handleChange }
-								value={ values.email }
-								fullWidth
-								error={ !!errors.email }
-								helperText={ errors.email }
-								margin='normal'
-							/>
-							<TextField
-								label='Contraseña'
-								name='password'
-								onChange={ handleChange }
-								value={ values.password }
-								type='password'
-								fullWidth
-								error={ !!errors.password }
-								helperText={ errors.password }
-								margin='normal'
-							/>
-							<Btn 
-								label='Inciar Sesión'
-								loading={ isLoading }
-								fullWidth
-								type='submit'
-								variant='contained'
-							/>
-						</form>
-					)}
-				</Formik>
-			</Paper>
+					<Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+						<LockOutlinedIcon />
+					</Avatar>
+					<Typography component="h1" variant="h5">
+						Ingresar a la plataforma
+					</Typography>
+					<Formik
+						initialValues={ initialState }
+						onSubmit={ async ( values ) => {
+							await onLogin( values )
+						}}
+						validationSchema={ yup.object().shape({
+							email: yup.string().email( 'Email no valido' ).required( 'Campo obligatorio' ),
+							password: yup.string().required( 'Campo obligatorio' ),
+						})}
+					>
+						{({ values, errors, touched, handleBlur, handleChange, handleSubmit}) => (
+							<form onSubmit={ handleSubmit } autoComplete='off' >
+								{ errorMsg && <Alert severity="error">{ errorMsg }</Alert> }
+								<TextField 
+									label='Email'
+									id='email'
+									name='email'
+									onChange={ handleChange }
+									onBlur={ handleBlur }
+									value={ values.email }
+									fullWidth
+									error={ !!errors.email && touched.email }
+									helperText={ touched.email && errors.email }
+									margin='normal'
+								/>
+								<TextField
+									label='Contraseña'
+									id='email'
+									name='password'
+									onChange={ handleChange }
+									onBlur={ handleBlur }
+									value={ values.password }
+									type='password'
+									fullWidth
+									error={ !!errors.password && touched.password }
+									helperText={ touched.password && errors.password }
+									margin='normal'
+								/>
+								<Btn 
+									label='Inciar Sesión'
+									loading={ isLoading }
+									fullWidth
+									type='submit'
+									variant='contained'
+									sx={{ mt: 3, mb: 2 }}
+								/>
+								<Grid container>
+									<Grid item xs>
+										<NextLink href='/forgot-password' passHref >
+											<Link  variant="body2">
+												¿Olvidaste tu contraseña?
+											</Link>
+										</NextLink>
+									</Grid>
+									<Grid item>
+										<NextLink href='/signup' passHref >
+											<Link variant="body2">
+												¿Aún no tienes una cuenta?
+											</Link>
+										</NextLink>
+									</Grid>
+								</Grid>
+							</form>
+						)}
+					</Formik>
+				</Paper>
+			</Container>
 		</ThemeLayout>
 	)
 }
