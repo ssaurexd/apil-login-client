@@ -2,7 +2,8 @@ export interface IUser {
 	_id: string;
 	name: string;
 	email: string;
-	isLogged: boolean
+	isOnline: boolean;
+	token: string
 }
 
 

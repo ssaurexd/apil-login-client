@@ -20,7 +20,10 @@ export default NextAuth({
 				try {
 					
 					const { data } = await api.post( '/auth/login', credentials )
-					return data.user
+					const { user, token } = data
+					
+					
+					return { ...user, token } 
 				} catch (error) {
 					
 					return null

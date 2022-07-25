@@ -21,12 +21,12 @@ export const AuthProvider: FC<Props> = ({ children }) => {
 
 			const user: IUser = {
 				...data.user as IUser,
-				isLogged: true
+				isOnline: true
 			}
-            console.log("🚀 ~ file: AuthProvider.tsx ~ line 27 ~ useEffect ~ process.env.JWT_SEED", process.env.JWT_SEED)
 			const token = jwt.sign({ uid: user._id }, `${process.env.JWT_SEED}` )
 
 			localStorage.setItem( 'token', token )
+			localStorage.setItem( 'bearer', data.user.token  )
 			dispatch( setUser( user ) )
 		}
 	}, [ status ])

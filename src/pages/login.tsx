@@ -84,7 +84,7 @@ const LoginPage: NextPage = ( ) => {
 						})}
 					>
 						{({ values, errors, touched, handleBlur, handleChange, handleSubmit}) => (
-							<form onSubmit={ handleSubmit } autoComplete='off' >
+							<form onSubmit={ handleSubmit } >
 								{ errorMsg && <Alert severity="error">{ errorMsg }</Alert> }
 								<TextField 
 									label='Email'

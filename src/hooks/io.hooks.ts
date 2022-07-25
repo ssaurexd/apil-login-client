@@ -33,10 +33,12 @@ export const useSocket = ( serverPath: string ) => {
     }, [ socket ])
 
     useEffect(() => {
+
         socket?.on('connect', () => setOnline( true ))
     }, [ socket ])
 
     useEffect(() => {
+        
         socket?.on('disconnect', () => setOnline( false ))
     }, [ socket ])
 
