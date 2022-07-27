@@ -21,7 +21,7 @@ const ThemeLayout: FC<Props> = ({ children }) => {
 		const localTheme = localStorage.getItem('theme') as Theme | undefined
 
 		if( localTheme ) dispatch( changeTheme( localTheme ) )
-	}, [  ])
+	}, [ dispatch ])
 
 	return (
 		<ThemeProvider theme={ theme }>	

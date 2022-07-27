@@ -29,7 +29,7 @@ export const AuthProvider: FC<Props> = ({ children }) => {
 			localStorage.setItem( 'bearer', data.user.token  )
 			dispatch( setUser( user ) )
 		}
-	}, [ status ])
+	}, [ status, data?.user, dispatch ])
 
 	return (
 		<>

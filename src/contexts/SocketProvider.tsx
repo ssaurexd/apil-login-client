@@ -12,18 +12,18 @@ export const SocketContext = createContext<ISocketValues>({} as ISocketValues);
 export const SocketProvider = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
 
     const { socket, online, connectSocket, disconnectSocket } = useSocket( 'http://localhost:4000' )
-	const isLogged = useAppSelector( state => state.user.isLogged )
+	const user = useAppSelector( state => state.user )
 
 	/* effects */
 	useEffect(() => {
 
-        if ( isLogged ) connectSocket()
-    }, [ isLogged ])
+        if ( user.isOnline ) connectSocket()
+    }, [ user, connectSocket ])
 
     useEffect(() => {
 
-        if ( !isLogged ) disconnectSocket()
-    }, [ isLogged ])
+        if ( !user.isOnline ) disconnectSocket()
+    }, [ user, disconnectSocket ])
     
     return (
         <SocketContext.Provider value={{ socket, online }}>
