@@ -11,7 +11,7 @@ export interface ISocketValues {
 export const SocketContext = createContext<ISocketValues>({} as ISocketValues);
 export const SocketProvider = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
 
-    const { socket, online, connectSocket, disconnectSocket } = useSocket( 'http://localhost:4000' )
+    const { socket, online, connectSocket, disconnectSocket } = useSocket( 'https://ssaurexd-chat-server.herokuapp.com' )
 	const user = useAppSelector( state => state.user )
 
 	/* effects */
