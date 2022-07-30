@@ -2,6 +2,7 @@ import { createContext, useEffect } from 'react';
 import { Socket } from 'socket.io-client'
 /*  */
 import { useAppSelector, useSocket } from '../hooks'
+import { apiHost } from '../config'
 
 
 export interface ISocketValues {
@@ -11,7 +12,7 @@ export interface ISocketValues {
 export const SocketContext = createContext<ISocketValues>({} as ISocketValues);
 export const SocketProvider = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
 
-    const { socket, online, connectSocket, disconnectSocket } = useSocket( 'https://ssaurexd-chat-server.herokuapp.com' )
+    const { socket, online, connectSocket, disconnectSocket } = useSocket( apiHost )
 	const user = useAppSelector( state => state.user )
 
 	/* effects */

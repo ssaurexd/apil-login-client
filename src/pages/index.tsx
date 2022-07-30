@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useContext, FormEvent } from 'react'
+import { useState, useEffect, useContext, FormEvent } from 'react'
 import type { GetServerSideProps, NextPage } from 'next'
 import { 
 	Button, 
@@ -14,7 +14,9 @@ import {
 	FormControl,
 	OutlinedInput,
 	InputAdornment,
-	IconButton 
+	IconButton,
+	Box,
+	Typography
 } from '@mui/material'
 import { useRouter } from 'next/router'
 import { getSession, signOut } from 'next-auth/react'
@@ -23,8 +25,9 @@ import SendIcon from '@mui/icons-material/Send'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import { changeTheme, logout } from '../redux/slices'
 import { ThemeLayout } from '../layouts'
-import { IUser } from '../interfaces'
+import { IMessage, IUser } from '../interfaces'
 import { SocketContext } from '../contexts'
+import { Message } from '../components'
 
 
 const Home: NextPage = () => {
@@ -32,6 +35,8 @@ const Home: NextPage = () => {
 	const [ isLoading, setIsLoading ] = useState( false )
 	const [ usersToChat, setUsersToChat ] = useState<IUser[]>( [] )
 	const [ isChatOpen, setIsChatOpen ] = useState( false )
+	const [ activeChat, setActiveChat ] = useState<IUser|null>( null )
+	const [ messages, setMessages ] = useState<IMessage[]>( [] )
 	const [ msg, setMsg ] = useState( '' )
 	const loggedUser = useAppSelector( state => state.user )
 	const dispatch = useAppDispatch()
@@ -50,14 +55,21 @@ const Home: NextPage = () => {
 	}
 	const setChat = ( user: IUser ) => {
 		
-		console.log("🚀 ~ file: index.tsx ~ line 35 ~ setChat ~ user", user)
+		setMessages([])
+		setActiveChat( user )
 		setIsChatOpen( true )
 	}
 
 	const onSendMsg = async ( e: FormEvent ) => {
 		
 		e.preventDefault()
-		console.log( msg )
+
+		socket?.emit( 'send-personal-msg', {
+			from: loggedUser._id,
+			to: activeChat?._id,
+			message: msg
+		})
+		setMsg( '' )
 	}
 	
 	useEffect( () => {
@@ -69,6 +81,15 @@ const Home: NextPage = () => {
 		})
 	}, [ socket, loggedUser._id ])
 
+	useEffect( () => {
+
+		socket?.on( 'send-personal-msg', ( msg: IMessage ) => {
+
+
+			setMessages( preMessages => [ ...preMessages, msg ] )
+		})
+	}, [ socket ])
+
 	return (
 		<ThemeLayout>
 			<Container>
@@ -77,7 +98,7 @@ const Home: NextPage = () => {
 				<Button onClick={() => router.push('/login')}>login</Button>
 
 				<Grid container display='flex' flexWrap='wrap' gap={ 2 } >
-					<Grid item md={ 3 } >
+					<Grid item xs={ 12 } lg={ 3 } >
 						<Paper
 							sx={{ width: '100%' }}
 						>
@@ -86,24 +107,26 @@ const Home: NextPage = () => {
 									 usersToChat.map( user => (
 										<ListItemButton key={ user._id } 
 											onClick={ () => setChat( user ) }
+											sx={{
+												backgroundColor: theme => user._id === activeChat?._id ? theme.palette.action.focus : '',
+											}}
 										>
 											<Grid 
-												xs={ 12 } 
-												item 
 												container 
 												flexDirection='row' 
 												flexWrap='nowrap' 
-												justifyContent='center'
+												justifyContent='flex-start'
 												alignItems='center'
+												gap={ 2 }
 											>
-												<Grid item xs={ 3 } >
+												<Grid item >
 													<Badge color='success' invisible={ !user.isOnline } variant='dot' >
 														<Avatar>
 															{ user.name.charAt(0) }
 														</Avatar>
 													</Badge>
 												</Grid>
-												<Grid item xs={ 9 } >
+												<Grid item  >
 													<ListItemText secondary={ user.email } />
 												</Grid>
 											</Grid>
@@ -115,22 +138,42 @@ const Home: NextPage = () => {
 					</Grid>
 
 					{/* Chat */}
-					<Grid item md={ 7 } >
+					<Grid item xs={ 12 } lg={ 7 } >
 						{
 							isChatOpen && (
 								<Paper 
 									elevation={ 0 } 
 									sx={{ 
-										width: '100%',
-										minHeight: '500px',
-										overflowY: 'scroll'
+										width: '100%'
 									}}
 								>
-									<Grid item container display='flex' flexDirection='column' justifyContent='space-between' >
-										<Grid item xs={ 12 }  >
-											hola
-										</Grid>
-										<Grid item xs={ 12 } >
+									<Box
+										sx={{ 
+											height: '500px',
+											display: 'flex',
+											flexDirection: 'column'
+										}}
+									>
+										<Box
+											sx={{
+												flexGrow: 1,
+												padding: '10px',
+												overflow: 'hidden',
+												overflowY: 'scroll',
+												'&::-webkit-scrollbar': {
+													width: '.4rem'
+												},
+												'&::-webkit-scrollbar-thumb': {
+													backgroundColor: '#8f9a9c',
+													borderRadius: theme => theme.shape.borderRadius
+												}
+											}}
+										>
+											{ messages.map( msg =>  (
+												<Message msg={ msg.message } right={ msg.from === loggedUser._id } key={ msg._id } />
+											))}
+										</Box>
+										<Box>
 											<form onSubmit={ onSendMsg } >
 												<FormControl sx={{ width: '100%' }} variant="outlined">
 													<OutlinedInput
@@ -150,8 +193,8 @@ const Home: NextPage = () => {
 													/>
 												</FormControl>
 											</form>
-										</Grid>
-									</Grid>
+										</Box>
+									</Box>
 								</Paper>
 							)
 						}
