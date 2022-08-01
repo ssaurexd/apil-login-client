@@ -9,24 +9,24 @@ import {
 	ListItemButton, 
 	ListItemText, 
 	Badge, 
-	Container, 
-	TextField,
+	Container,
 	FormControl,
 	OutlinedInput,
 	InputAdornment,
 	IconButton,
-	Box,
-	Typography
+	Box
 } from '@mui/material'
 import { useRouter } from 'next/router'
 import { getSession, signOut } from 'next-auth/react'
 import SendIcon from '@mui/icons-material/Send'
 /*  */
 import { useAppDispatch, useAppSelector } from '../hooks'
-import { changeTheme, logout } from '../redux/slices'
-import { ThemeLayout } from '../layouts'
-import { IMessage, IUser } from '../interfaces'
+import { api, scrollFunctions } from '../utils'
 import { SocketContext } from '../contexts'
+import { IMessage, IUser } from '../interfaces'
+import { changeTheme, logout } from '../redux/slices'
+/*  */
+import { ThemeLayout } from '../layouts'
 import { Message } from '../components'
 
 
@@ -51,13 +51,27 @@ const Home: NextPage = () => {
 		
 		localStorage.clear()
 		dispatch( logout() )
+		
 		signOut()
 	}
-	const setChat = ( user: IUser ) => {
+	const setChat = async ( user: IUser ) => {
 		
-		setMessages([])
-		setActiveChat( user )
-		setIsChatOpen( true )
+		try {
+			
+			const resp = await api.get<{ messages: IMessage[]}>( `/message/from/${ user._id }`, {
+				headers: {
+					'Authorization': `Bearer ${ localStorage.getItem( 'bearer' ) }`
+				}
+			})
+			const { messages: msgs } = resp.data
+
+			setMessages([ ...msgs ])
+			setActiveChat( user )
+			setIsChatOpen( true )
+		} catch ( error ) {
+			
+            console.log("🚀 ~ file: index.tsx ~ line 61 ~ setChat ~ error", error)
+		}
 	}
 
 	const onSendMsg = async ( e: FormEvent ) => {
@@ -89,6 +103,8 @@ const Home: NextPage = () => {
 			setMessages( preMessages => [ ...preMessages, msg ] )
 		})
 	}, [ socket ])
+
+	useEffect( () => scrollFunctions.scrollToBottomAnimated( 'messages-box' ), [ messages ])
 
 	return (
 		<ThemeLayout>
@@ -155,6 +171,7 @@ const Home: NextPage = () => {
 										}}
 									>
 										<Box
+											id='messages-box'
 											sx={{
 												flexGrow: 1,
 												padding: '10px',
@@ -169,9 +186,7 @@ const Home: NextPage = () => {
 												}
 											}}
 										>
-											{ messages.map( msg =>  (
-												<Message msg={ msg.message } right={ msg.from === loggedUser._id } key={ msg._id } />
-											))}
+											{ messages.map( msg =>  <Message key={ msg._id } msg={ msg } /> )}
 										</Box>
 										<Box>
 											<form onSubmit={ onSendMsg } >

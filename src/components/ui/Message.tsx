@@ -1,15 +1,19 @@
-import { FC } from 'react'
+import { FC, useMemo } from 'react'
 import { Typography, Box } from '@mui/material'
+/*  */
 import { useAppSelector } from '../../hooks';
+import { dateFunctions } from '../../utils'
+import { IMessage } from '../../interfaces';
 
 
 interface Props {
-	msg: string;
-	right: boolean
+	msg: IMessage
 }
-export const Message: FC<Props> = ({ msg, right }) => {
+export const Message: FC<Props> = ({ msg }) => {
 
 	const { theme } = useAppSelector( state => state.app )
+	const { _id: uid } = useAppSelector( state => state.user )
+	const right = useMemo( () => uid === msg.from, [ uid, msg.from ])
 
 	return (
 		<Box 
@@ -32,9 +36,9 @@ export const Message: FC<Props> = ({ msg, right }) => {
 					borderRadius: '4px'
 				}}
 			>
-				{ msg }
+				{ msg.message }
 			</Typography>
-			<Typography variant='caption' >7 min, 22/02/2019</Typography>
+			<Typography variant='caption' >{ dateFunctions.getFormatDistanceToNow( msg.createdAt ) }</Typography>
 		</Box>
 	)
 }

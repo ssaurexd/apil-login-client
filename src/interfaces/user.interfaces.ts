@@ -3,9 +3,11 @@ export interface IUser {
 	name: string;
 	email: string;
 	isOnline: boolean;
-	token: string
+	token: string;
+	role: IRoles
 }
 
+export type IRoles = 'user' | 'admin' 
 
 
 /* --START-- Auth

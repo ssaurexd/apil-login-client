@@ -8,6 +8,9 @@ npm install
 ## Variables ENV
 ```
 NEXTAUTH_SECRET = 
+NEXTAUTH_URL = 
+JWT_SEED =
+API_HOST = 
 ```
 
 ## Scripts dev
