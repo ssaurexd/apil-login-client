@@ -7,7 +7,7 @@ export interface IUser {
 	role: IRoles
 }
 
-export type IRoles = 'user' | 'admin' 
+export type IRoles = 'user' | 'admin' | ''
 
 
 /* --START-- Auth

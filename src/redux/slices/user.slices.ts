@@ -8,7 +8,8 @@ const initialState: IUser = {
 	email: '',
 	name: '',
 	isOnline: false,
-	token: ''
+	token: '',
+	role: ''
 } 
 
 const userSlice = createSlice({
