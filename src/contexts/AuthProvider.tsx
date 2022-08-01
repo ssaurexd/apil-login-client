@@ -23,7 +23,7 @@ export const AuthProvider: FC<Props> = ({ children }) => {
 				...data.user as IUser,
 				isOnline: true
 			}
-			const token = jwt.sign({ uid: user._id }, `${process.env.JWT_SEED}` )
+			const token = jwt.sign({ uid: user._id }, `${process.env.NEXT_PUBLIC_JWT_SEED}` )
 
 			localStorage.setItem( 'token', token )
 			localStorage.setItem( 'bearer', data.user.token  )
