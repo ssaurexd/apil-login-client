@@ -7,7 +7,8 @@ const initialState: IUser = {
 	_id: '',
 	email: '',
 	name: '',
-	isLogged: false
+	isOnline: false,
+	token: ''
 } 
 
 const userSlice = createSlice({
@@ -16,11 +17,17 @@ const userSlice = createSlice({
 	reducers: {
 		setUser: ( state, actions: PayloadAction<IUser> ) => {
 			return actions.payload
+		},
+		logout: state => {
+			return {
+				...initialState
+			}
 		}
 	}
 })
 
 export const {
-	setUser
+	setUser,
+	logout
 } = userSlice.actions
 export const userReducer = userSlice.reducer

@@ -1,5 +1,6 @@
 import { FC, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
+import jwt from 'jsonwebtoken'
 /*  */
 import { useAppDispatch } from '../hooks'
 import { setUser } from '../redux/slices'
@@ -8,7 +9,7 @@ import { IUser } from '../interfaces'
 interface Props {
 	children: JSX.Element | JSX.Element[]
 }
-const AuthLayout: FC<Props> = ({ children }) => {
+export const AuthProvider: FC<Props> = ({ children }) => {
 
 	const dispatch = useAppDispatch()
 	const { status, data } = useSession()
@@ -20,11 +21,15 @@ const AuthLayout: FC<Props> = ({ children }) => {
 
 			const user: IUser = {
 				...data.user as IUser,
-				isLogged: true
+				isOnline: true
 			}
+			const token = jwt.sign({ uid: user._id }, `${process.env.JWT_SEED}` )
+
+			localStorage.setItem( 'token', token )
+			localStorage.setItem( 'bearer', data.user.token  )
 			dispatch( setUser( user ) )
 		}
-	}, [ status ])
+	}, [ status, data?.user, dispatch ])
 
 	return (
 		<>
@@ -32,5 +37,3 @@ const AuthLayout: FC<Props> = ({ children }) => {
 		</>
 	)
 }
-
-export default AuthLayout

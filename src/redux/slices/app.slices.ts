@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 /*  */
-import { IApp, Theme } from '../../interfaces'
+import { IApp, IUser, Theme } from '../../interfaces'
 
 
 const initialState: IApp = {

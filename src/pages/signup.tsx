@@ -5,6 +5,7 @@ import { NextPage, GetServerSideProps } from 'next'
 import { getSession, signIn } from 'next-auth/react'
 import * as yup from 'yup'
 import { Formik } from 'formik'
+import axios from 'axios'
 import { 
 	Alert,
 	Paper, 
@@ -16,36 +17,66 @@ import {
 /*  */
 import { ThemeLayout } from '../layouts'
 import { Btn, ToggleTheme } from '../components'
+import { api } from '../utils'
+import { ISignupErrorResponse } from '../interfaces'
 
 
 interface IFormData {
-	email: string;
+	email: string
 	password: string
+	name: string
+	repeatPassword: string
 }
-const LoginPage: NextPage = ( ) => {
+const SignupPage: NextPage = ( ) => {
 
 	const [ isLoading, setIsLoading ] = useState( false )
 	const [ errorMsg, setErrorMsg ] = useState( '' )
 	const [ initialState ] = useState<IFormData>({
 		email: '',
-		password: ''
+		password: '',
+		name: '',
+		repeatPassword: ''
 	})
 	const router = useRouter()
 
 	/* functions */
-	const onLogin = async ( values: { email: string; password: string } ) => {
+	const onSignup = async ( 
+		{ email, name, password }: IFormData, 
+		setFieldError: ( field: string, msg: string ) => void  
+	) => {
 		
 		setErrorMsg( '' )
 		setIsLoading( true )
-		const resp: any = await signIn( 'credentials', { ...values, redirect: false } )
-		const path = ( router.query.p || '/' ) as string 
+		const data = { name, email, password }
 
-		if( resp.ok ) router.push( path )
+		try {
+			
+			await api.post( '/auth/signup', data )
+		} catch ( error ) {
+			
+			setIsLoading( false )
+			if( axios.isAxiosError( error ) ) {
+				
+				const errResp: ISignupErrorResponse = error.response?.data as ISignupErrorResponse
+
+				setErrorMsg( errResp.msg || '' )
+				if( errResp.errors?.length ) {
+
+					errResp.errors.map( err => {
+						setFieldError( err.param, err.msg )
+					})
+				}
+			}
+			return
+		}
+
+		const resp: any = await signIn( 'credentials', { ...data, redirect: false } )
+
+		if( resp.ok ) router.reload()
 		else {
 
 			console.log( resp.error )
 			setIsLoading( false )
-			setErrorMsg( 'Email y/o Contraseña incorrectos.' )
 		}
 	}
 
@@ -75,17 +106,33 @@ const LoginPage: NextPage = ( ) => {
 				>
 					<Formik
 						initialValues={ initialState }
-						onSubmit={ async ( values ) => {
-							await onLogin( values )
+						onSubmit={ async ( values, { setFieldError } ) => {
+							await onSignup( values, setFieldError )
 						}}
 						validationSchema={ yup.object().shape({
 							email: yup.string().email( 'Email no valido' ).required( 'Campo obligatorio' ),
-							password: yup.string().required( 'Campo obligatorio' ),
+							password: yup.string().required( 'Campo obligatorio' ).min( 4, 'La contraseña es demasiado corta.' ),
+							name: yup.string().required( 'Campo obligatorio' ),
+							repeatPassword: yup.string()
+								.required( 'Campo obligatorio' )
+								.oneOf([ yup.ref('password'), null ], 'Las contraseñas no coinciden')
 						})}
 					>
 						{({ values, errors, touched, handleBlur, handleChange, handleSubmit}) => (
-							<form onSubmit={ handleSubmit } >
+							<form onSubmit={ handleSubmit } autoComplete='off' >
 								{ errorMsg && <Alert severity="error">{ errorMsg }</Alert> }
+								<TextField 
+									label='Nombre'
+									id='name'
+									name='name'
+									onChange={ handleChange }
+									onBlur={ handleBlur }
+									value={ values.name }
+									fullWidth
+									error={ !!errors.name && touched.name }
+									helperText={ touched.name && errors.name }
+									margin='normal'
+								/>
 								<TextField 
 									label='Email'
 									id='email'
@@ -111,8 +158,21 @@ const LoginPage: NextPage = ( ) => {
 									helperText={ touched.password && errors.password }
 									margin='normal'
 								/>
+								<TextField
+									label='Repite tu contraseña'
+									id='repeatPassword'
+									name='repeatPassword'
+									onChange={ handleChange }
+									onBlur={ handleBlur }
+									value={ values.repeatPassword }
+									type='password'
+									fullWidth
+									error={ !!errors.repeatPassword && touched.repeatPassword }
+									helperText={ touched.repeatPassword && errors.repeatPassword }
+									margin='normal'
+								/>
 								<Btn 
-									label='Inciar Sesión'
+									label='Registrarse'
 									loading={ isLoading }
 									fullWidth
 									type='submit'
@@ -121,16 +181,12 @@ const LoginPage: NextPage = ( ) => {
 								/>
 								<Grid container>
 									<Grid item xs>
-										<NextLink href='/forgot-password' passHref >
-											<Link  variant="body2">
-												¿Olvidaste tu contraseña?
-											</Link>
-										</NextLink>
+										<div></div>
 									</Grid>
 									<Grid item>
-										<NextLink href='/signup' passHref >
+										<NextLink href='/login' passHref >
 											<Link variant="body2">
-												¿Aún no tienes una cuenta?
+												¿Ya tienes una cuenta?
 											</Link>
 										</NextLink>
 									</Grid>
@@ -165,4 +221,4 @@ export const getServerSideProps: GetServerSideProps = async ({ req, query }) => 
 	}
 }
 
-export default LoginPage
+export default SignupPage

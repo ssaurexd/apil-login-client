@@ -5,7 +5,6 @@ import { useAppDispatch, useAppSelector } from '../hooks'
 import { darkTheme, lightTheme } from '../config'
 import { changeTheme } from '../redux/slices'
 import { Theme } from '../interfaces'
-import AuthLayout from './AuthLayout'
 
 interface Props {
 	children: JSX.Element | JSX.Element[]
@@ -22,15 +21,13 @@ const ThemeLayout: FC<Props> = ({ children }) => {
 		const localTheme = localStorage.getItem('theme') as Theme | undefined
 
 		if( localTheme ) dispatch( changeTheme( localTheme ) )
-	}, [  ])
+	}, [ dispatch ])
 
 	return (
-		<AuthLayout>
-			<ThemeProvider theme={ theme }>	
-				<CssBaseline />
-				{ children }
-			</ThemeProvider>
-		</AuthLayout>
+		<ThemeProvider theme={ theme }>	
+			<CssBaseline />
+			{ children }
+		</ThemeProvider>
 	)
 }
 

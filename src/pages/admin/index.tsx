@@ -1,5 +1,6 @@
 import { NextPage, GetServerSideProps } from 'next'
 import { getSession } from 'next-auth/react'
+import { IUser } from '../../interfaces'
 import { ThemeLayout } from '../../layouts'
 
 
@@ -27,7 +28,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req, query }) => 
 		}
 	}
 
-	const user = session.user as any
+	const user = session.user as IUser
 	
 	if( !admitedRoles.includes( user.role ) ) {
 
