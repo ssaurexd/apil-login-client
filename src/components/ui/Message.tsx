@@ -33,7 +33,8 @@ export const Message: FC<Props> = ({ msg }) => {
 						: right ? '#c1d9d0' : '#e4ebf0',
 					padding: '2px 10px',
 					maxWidth: '70%',
-					borderRadius: '4px'
+					borderRadius: '4px',
+					overflowWrap: 'break-word'
 				}}
 			>
 				{ msg.message }

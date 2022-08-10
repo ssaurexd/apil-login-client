@@ -43,9 +43,8 @@ const LoginPage: NextPage = ( ) => {
 		setErrorMsg( '' )
 		setIsLoading( true )
 		const resp: any = await signIn( 'credentials', { ...values, redirect: false } )
-		const path = ( router.query.p || '/' ) as string 
 
-		if( resp.ok ) router.push( path )
+		if( resp.ok ) router.reload()
 		else {
 
 			console.log( resp.error )
