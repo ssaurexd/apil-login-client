@@ -1,4 +1,9 @@
 export * from './theme'
 
 
-export const apiHost = 'https://ssaurexd-chat-server.herokuapp.com/' //process.env.NODE_ENV === 'production' ? process.env.API_HOST! : 'http://localhost:4000'
+const host = [ 'https://ssaurexd-chat-server.herokuapp.com/', 'http://localhost:4000' ]
+/*
+	0: productions
+	1: developer
+*/
+export const apiHost = host[1]

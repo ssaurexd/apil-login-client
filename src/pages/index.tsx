@@ -65,7 +65,7 @@ const Home: NextPage = () => {
 			})
 			const { messages: msgs } = resp.data
 
-			setMessages([ ...msgs ])
+			setMessages([ ...msgs.reverse() ])
 			setActiveChat( user )
 			setIsChatOpen( true )
 		} catch ( error ) {
@@ -99,10 +99,19 @@ const Home: NextPage = () => {
 
 		socket?.on( 'send-personal-msg', ( msg: IMessage ) => {
 
+			if( 
+				( msg.from === loggedUser._id && msg.to === activeChat?._id ) ||
+				( msg.from === activeChat?._id && msg.to === loggedUser._id )
+			) {
+				
+				setMessages( preMessages =>  {
 
-			setMessages( preMessages => [ ...preMessages, msg ] )
+					if( preMessages.includes( msg ) ) return [ ...preMessages ]
+					else return [ ...preMessages, msg ]
+				})
+			}
 		})
-	}, [ socket ])
+	}, [ socket, activeChat?._id, loggedUser ])
 
 	useEffect( () => scrollFunctions.scrollToBottomAnimated( 'messages-box' ), [ messages ])
 

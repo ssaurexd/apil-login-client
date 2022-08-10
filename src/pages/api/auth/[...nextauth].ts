@@ -1,5 +1,6 @@
 import NextAuth from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
+import GoogleProvider from 'next-auth/providers/google'
 import { api } from '../../../utils'
 
 
@@ -30,6 +31,10 @@ export default NextAuth({
 				}
 			}
 		}),
+		GoogleProvider({
+			clientId: process.env.GOOGLE_SID || '',
+			clientSecret: process.env.GOOGLE_CLIENT_SECRET || ''
+		})
 	],
 	callbacks: {
 		jwt: async ({ token, account, user }) => {
@@ -42,6 +47,13 @@ export default NextAuth({
 
 					case 'credentials':
 						token.user = user
+						break;
+
+					case 'oauth':
+						
+						const resp = await api.post( '/auth/oauth/google', { email: user?.email, name: user?.name })
+
+						token.user = resp.data
 						break;
 				
 					default:
