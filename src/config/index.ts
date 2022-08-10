@@ -6,4 +6,4 @@ const host = [ 'https://ssaurexd-chat-server.herokuapp.com/', 'http://localhost:
 	0: productions
 	1: developer
 */
-export const apiHost = host[1]
+export const apiHost = host[0]
