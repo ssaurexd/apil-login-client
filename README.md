@@ -9,8 +9,10 @@ npm install
 ```
 NEXTAUTH_SECRET = 
 NEXTAUTH_URL = 
-JWT_SEED =
+NEXT_PUBLIC_JWT_SEED =
 API_HOST = 
+GOOGLE_SID =
+GOOGLE_CLIENT_SECRET =
 ```
 
 ## Scripts dev

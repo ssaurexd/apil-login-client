@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import NextLink from 'next/link'
 import { NextPage, GetServerSideProps } from 'next'
-import { getSession, signIn } from 'next-auth/react'
+import { getSession, signIn, getProviders } from 'next-auth/react'
 import * as yup from 'yup'
 import { Formik } from 'formik'
 import { 
@@ -11,11 +11,14 @@ import {
 	TextField,
 	Grid,
 	Link,
-	Container
+	Container,
+	Divider
 } from '@mui/material'
+import GoogleButton from 'react-google-button'
 /*  */
 import { ThemeLayout } from '../layouts'
 import { Btn, ToggleTheme } from '../components'
+import { useAppSelector } from '../hooks'
 
 
 interface IFormData {
@@ -26,11 +29,13 @@ const LoginPage: NextPage = ( ) => {
 
 	const [ isLoading, setIsLoading ] = useState( false )
 	const [ errorMsg, setErrorMsg ] = useState( '' )
+	const [ providers, setProviders ] = useState<any>( {} )
 	const [ initialState ] = useState<IFormData>({
 		email: '',
 		password: ''
 	})
 	const router = useRouter()
+	const theme = useAppSelector( state => state.app.theme )
 
 	/* functions */
 	const onLogin = async ( values: { email: string; password: string } ) => {
@@ -48,6 +53,30 @@ const LoginPage: NextPage = ( ) => {
 			setErrorMsg( 'Email y/o Contraseña incorrectos.' )
 		}
 	}
+
+	const getBtnProvides = async (  ) => {
+		
+		try {
+
+			const prov = await getProviders()
+			const { credentials, ...restProv } = prov as any
+			setProviders( restProv )
+		} catch ( error ) {
+			
+            console.log("🚀 ~ file: login.tsx ~ line 58 ~ getBtnProvides ~ error", error)
+		}
+	}
+
+	const onSigninWithGoogle = (  ) => {
+		
+		signIn( 'google' )
+	}
+
+	/* effects */
+	useEffect( () => {
+
+		getBtnProvides()
+	}, [])
 
 	return (
 		<ThemeLayout>
@@ -134,6 +163,29 @@ const LoginPage: NextPage = ( ) => {
 											</Link>
 										</NextLink>
 									</Grid>
+								</Grid>
+								<Divider sx={{ mt: 2, mb: 2 }} />
+								<Grid container display='flex' flexDirection='column' >
+									{ Object.values( providers ).map(( prov: any ) =>  {
+
+										switch ( prov.id ) {
+											case 'google':
+												
+												return (
+													<GoogleButton 
+														label='Iniciar sesión con Google'
+														type={ theme } 
+														style={{ width: '100%', textTransform: 'uppercase', fontSize: '12px' }} 
+														key={ prov.id }
+														onClick={ onSigninWithGoogle }
+													/>
+												)
+										
+											default:
+												return <></>
+												break;
+										}
+									})}
 								</Grid>
 							</form>
 						)}

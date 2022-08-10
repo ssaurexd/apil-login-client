@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import NextLink from 'next/link'
 import { NextPage, GetServerSideProps } from 'next'
-import { getSession, signIn } from 'next-auth/react'
+import { getProviders, getSession, signIn } from 'next-auth/react'
 import * as yup from 'yup'
 import { Formik } from 'formik'
 import axios from 'axios'
@@ -12,13 +12,17 @@ import {
 	TextField,
 	Grid,
 	Link,
-	Container
+	Container,
+	Divider
 } from '@mui/material'
+import GoogleButton from 'react-google-button'
+/*  */
+import { ISignupErrorResponse } from '../interfaces'
+import { useAppSelector } from '../hooks'
 /*  */
 import { ThemeLayout } from '../layouts'
 import { Btn, ToggleTheme } from '../components'
 import { api } from '../utils'
-import { ISignupErrorResponse } from '../interfaces'
 
 
 interface IFormData {
@@ -31,6 +35,7 @@ const SignupPage: NextPage = ( ) => {
 
 	const [ isLoading, setIsLoading ] = useState( false )
 	const [ errorMsg, setErrorMsg ] = useState( '' )
+	const [ providers, setProviders ] = useState<any>( {} )
 	const [ initialState ] = useState<IFormData>({
 		email: '',
 		password: '',
@@ -38,6 +43,7 @@ const SignupPage: NextPage = ( ) => {
 		repeatPassword: ''
 	})
 	const router = useRouter()
+	const theme = useAppSelector( state => state.app.theme )
 
 	/* functions */
 	const onSignup = async ( 
@@ -79,6 +85,27 @@ const SignupPage: NextPage = ( ) => {
 			setIsLoading( false )
 		}
 	}
+
+	const getBtnProvides = async (  ) => {
+		
+		try {
+
+			const prov = await getProviders()
+			const { credentials, ...restProv } = prov as any
+			setProviders( restProv )
+		} catch ( error ) {
+			
+            console.log("🚀 ~ file: login.tsx ~ line 58 ~ getBtnProvides ~ error", error)
+		}
+	}
+
+	const onSignupWithGoogle = (  ) => {
+		
+		signIn( 'google' )
+	}
+
+	/* effects */
+	useEffect( () => { getBtnProvides() }, [] )
 
 	return (
 		<ThemeLayout>
@@ -190,6 +217,28 @@ const SignupPage: NextPage = ( ) => {
 											</Link>
 										</NextLink>
 									</Grid>
+								</Grid>
+								<Divider sx={{ mt: 2, mb: 2 }} />
+								<Grid container display='flex' flexDirection='column' >
+									{ Object.values( providers ).map(( prov: any ) =>  {
+
+										switch ( prov.id ) {
+											case 'google':
+												
+												return (
+													<GoogleButton 
+														label='Registrarse con Google'
+														type={ theme } 
+														style={{ width: '100%', textTransform: 'uppercase', fontSize: '12px' }} 
+														key={ prov.id }
+														onClick={ onSignupWithGoogle }
+													/>
+												)
+										
+											default:
+												return <></>
+										}
+									})}
 								</Grid>
 							</form>
 						)}
