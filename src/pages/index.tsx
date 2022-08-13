@@ -279,8 +279,8 @@ const Home: NextPage = () => {
 				<IconButton
 					sx={{
 						display: isSmOrLess && !openDrawer ? 'inline' : 'none',
-						position: 'absolute',
-						top: '10px',
+						position: 'fixed',
+						top: '15px',
 						left: '10px'
 					}}
 					onClick={ () => setOpenDrawer( !openDrawer ) }
