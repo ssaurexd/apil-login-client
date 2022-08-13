@@ -19,7 +19,9 @@ import {
 	Typography,
 	Divider,
 	Collapse,
-	ListItemIcon
+	ListItemIcon,
+	useTheme,
+	useMediaQuery
 } from '@mui/material'
 import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
@@ -28,7 +30,8 @@ import SendIcon from '@mui/icons-material/Send'
 import LogoutIcon from '@mui/icons-material/Logout'
 import LightModeIcon from '@mui/icons-material/LightMode'
 import DarkModeIcon from '@mui/icons-material/DarkMode'
-import { useRouter } from 'next/router'
+import MenuOpenIcon from '@mui/icons-material/MenuOpen';
+import { Menu as MenuIcon } from '@mui/icons-material'
 import { getSession, signOut } from 'next-auth/react'
 /*  */
 import { useAppDispatch, useAppSelector } from '../hooks'
@@ -38,9 +41,10 @@ import { IMessage, IUser } from '../interfaces'
 import { changeTheme, logout } from '../redux/slices'
 /*  */
 import { ThemeLayout } from '../layouts'
-import { Message, ToggleTheme } from '../components'
+import { Message } from '../components'
 
 
+const drawerWidth = 340
 const Home: NextPage = () => {
 
 	const [ offlineUsers, setOfflineUsers ] = useState<IUser[]>( [] )
@@ -48,12 +52,14 @@ const Home: NextPage = () => {
 	const [ isChatOpen, setIsChatOpen ] = useState( false )
 	const [ activeChat, setActiveChat ] = useState<IUser|null>( null )
 	const [ messages, setMessages ] = useState<IMessage[]>( [] )
+	const [ openDrawer, setOpenDrawer ] = useState( false )
 	const [ msg, setMsg ] = useState( '' )
 	const [ userSettingsOpen, setUserSettingsOpen ] = useState( false )
 	const loggedUser = useAppSelector( state => state.user )
 	const theme = useAppSelector( state => state.app.theme )
 	const dispatch = useAppDispatch()
-	const router = useRouter()
+	const muitheme = useTheme()
+ 	const isSmOrLess = useMediaQuery( muitheme.breakpoints.down('sm') )
 	const { socket } = useContext( SocketContext )
 	
 	const toggleTheme = (  ) => {
@@ -81,6 +87,8 @@ const Home: NextPage = () => {
 			setMessages([ ...msgs.reverse() ])
 			setActiveChat( user )
 			setIsChatOpen( true )
+			
+			if( isSmOrLess ) setOpenDrawer( false )
 		} catch ( error ) {
 			
             console.log("🚀 ~ file: index.tsx ~ line 61 ~ setChat ~ error", error)
@@ -133,14 +141,27 @@ const Home: NextPage = () => {
 	return (
 		<ThemeLayout>
 			<Drawer
-				variant="permanent"
+				variant={ isSmOrLess ? 'persistent' : 'permanent' }
 				sx={{
-					display: { xs: 'none', sm: 'block' },
-					'& .MuiDrawer-paper': { boxSizing: 'border-box', width: 340 },
+					'& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
 				}}
-				open
+				open={ isSmOrLess ? openDrawer : true }
 			>
-				<Toolbar />
+				<Toolbar
+					sx={{
+						display: 'flex',
+						justifyContent: 'flex-end'
+					}}
+				>
+					<IconButton
+						sx={{
+							display: isSmOrLess ? 'inline' : 'none'
+						}}
+						onClick={ () => setOpenDrawer( !openDrawer ) }
+					>
+						<MenuOpenIcon />
+					</IconButton>
+				</Toolbar>
 				<List>
 					<ListItemButton onClick={ () => setUserSettingsOpen( !userSettingsOpen ) } >
 						<ListItemAvatar><Avatar /></ListItemAvatar>
@@ -244,11 +265,28 @@ const Home: NextPage = () => {
 				</List>
 			</Drawer>
 			<Box
-				sx={{ p: '0 10px 0 350px', height: 'calc( 100vh - 5px )', maxHeight: 'calc( 100vh - 5px )' }}
+				sx={{ 
+					p: `0 10px 0 ${ isSmOrLess ? 10 : 350 }px`, 
+					height: 'calc( 100vh - 5px )', 
+					maxHeight: 'calc( 100vh - 5px )',
+					position: 'relative',
+					m: '0 auto'
+				}}
 				display='flex'
 				justifyContent='flex-end'
 				flexDirection='column'
 			>
+				<IconButton
+					sx={{
+						display: isSmOrLess && !openDrawer ? 'inline' : 'none',
+						position: 'absolute',
+						top: '10px',
+						left: '10px'
+					}}
+					onClick={ () => setOpenDrawer( !openDrawer ) }
+				>
+					<MenuIcon />
+				</IconButton>
 				{
 					isChatOpen ? (
 						<Box
